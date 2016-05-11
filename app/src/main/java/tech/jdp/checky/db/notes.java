@@ -18,7 +18,7 @@ public class notes {
     private db mydb;
     private SQLiteDatabase database;
     private final static String TABLE = "notes";
-    private final static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    private final static DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm");
 
     public notes(Context context) {
         mydb = new db(context);
@@ -29,13 +29,13 @@ public class notes {
         ContentValues vals = new ContentValues();
         vals.put("title", title);
         vals.put("note", note);
-        vals.put("updated_on", dateFormat.format(new Date()));
-        vals.put("created_on", dateFormat.format(new Date()));
+        vals.put("updated_on", System.currentTimeMillis());
+        vals.put("created_on", System.currentTimeMillis());
         return database.insert(TABLE, null, vals);
     }
 
     public Map<Integer, Map<String, Object>> read() {
-        Cursor mCursor = database.rawQuery("SELECT id,title,note,updated_on,created_on FROM " + TABLE + " ORDER BY id", new String[]{});
+        Cursor mCursor = database.rawQuery("SELECT id,title,note,updated_on,created_on FROM " + TABLE + " ORDER BY updated_on ASC", new String[]{});
         Map<Integer, Map<String, Object>> result = new HashMap<>();
         if (mCursor != null) {
             while (mCursor.moveToNext()) {
@@ -43,8 +43,8 @@ public class notes {
                 temp.put("id", mCursor.getInt(0));
                 temp.put("title", mCursor.getString(1));
                 temp.put("note", mCursor.getString(2));
-                temp.put("updated_on", mCursor.getString(3));
-                temp.put("created_on", mCursor.getString(4));
+                temp.put("updated_on", dateFormat.format(new Date(mCursor.getLong(3))));
+                temp.put("created_on", dateFormat.format(new Date(mCursor.getLong(4))));
                 result.put((Integer) temp.get("id"), temp);
             }
         }
@@ -60,8 +60,8 @@ public class notes {
             result.put("id", id);
             result.put("title", mCursor.getString(1));
             result.put("note", mCursor.getString(2));
-            result.put("updated_on", mCursor.getString(3));
-            result.put("created_on", mCursor.getString(4));
+            result.put("updated_on", dateFormat.format(new Date(mCursor.getLong(3))));
+            result.put("created_on", dateFormat.format(new Date(mCursor.getLong(4))));
         }
         return result;
     }
@@ -70,7 +70,7 @@ public class notes {
         ContentValues vals = new ContentValues();
         vals.put("title", title);
         vals.put("note", note);
-        vals.put("updated_on", dateFormat.format(new Date()));
+        vals.put("updated_on", System.currentTimeMillis());
         return database.update(TABLE, vals, "id = ?", new String[]{String.valueOf(id)});
     }
 
