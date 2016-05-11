@@ -18,6 +18,8 @@ public class db extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, note TEXT, created_on INTEGER, updated_on INTEGER)");
+        db.execSQL("CREATE TABLE checklists (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, created_on INTEGER, updated_on INTEGER)");
+        db.execSQL("CREATE TABLE checklist_items (id INTEGER PRIMARY KEY AUTOINCREMENT, checklist_id INTEGER, text TEXT, checked INTEGER, created_on INTEGER, updated_on INTEGER)");
     }
 
     @Override

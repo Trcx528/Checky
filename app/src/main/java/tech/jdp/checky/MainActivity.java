@@ -19,6 +19,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import java.util.ArrayList;
 import java.util.Map;
 
+import tech.jdp.checky.db.checklist;
+import tech.jdp.checky.db.checklist_item;
 import tech.jdp.checky.db.notes;
 
 public class MainActivity extends AppCompatActivity {
@@ -126,6 +128,12 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Intent i = new Intent(getApplicationContext(), ChecklistActivity.class);
+                    checklist new_checklist = new checklist();
+                    new_checklist.title = "New Checklist";
+                    long checklist_id = new_checklist.create();
+                    Bundle extras = new Bundle();
+                    extras.putInt("id", (int) checklist_id);
+                    i.putExtras(extras);
                     startActivity(i);
                 }
             });
@@ -162,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
                 Uri.parse("android-app://tech.jdp.checky/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
+        checklist.init(getApplicationContext());
+        checklist_item.init(getApplicationContext());
     }
 
     @Override
