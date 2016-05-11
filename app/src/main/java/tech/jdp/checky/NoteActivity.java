@@ -22,12 +22,13 @@ public class NoteActivity extends AppCompatActivity {
         assert getSupportActionBar() != null;
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        if (savedInstanceState == null) {
+        if (getIntent().getExtras() == null) {
             setTitle("New Note");
         } else {
-            id = (Integer) savedInstanceState.get("id");
+            this.id = (Integer) getIntent().getExtras().get("id");
+            System.out.println(this.id);
             notes note = new notes(getApplicationContext());
-            Map<String, Object> res = note.read(id);
+            Map<String, Object> res = note.read(this.id);
             setTitle((String) res.get("title"));
             txtNote.setText((String) res.get("note"));
         }
