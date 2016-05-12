@@ -3,6 +3,7 @@ package tech.jdp.checky;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -42,10 +43,14 @@ public class ChecklistActivity extends AppCompatActivity {
                 final checklist_item item = (checklist_item) lv.getItemAtPosition(position);
                 AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
                 final EditText text = new EditText(getApplicationContext());
+                checklist cl = checklist.read(checklist_id);
+                cl.title = txtTitle.getText().toString();
+                cl.update();
                 text.setSingleLine();
-                builder.setView(text);
                 builder.setTitle("Edit Item");
+                text.setTextColor(Color.BLACK);
                 text.setText(item.text);
+                builder.setView(text);
                 builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -65,6 +70,7 @@ public class ChecklistActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         item.delete();
+                        loadData();
                     }
                 });
                 builder.setCancelable(true);

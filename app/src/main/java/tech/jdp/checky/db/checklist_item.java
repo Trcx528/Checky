@@ -68,6 +68,11 @@ public class checklist_item {
         return new_item;
     }
 
+    public static int delete(Integer checklist_id) {
+        init(MainActivity.ctx);
+        return database.delete(TABLE, "checklist_id = ?", new String[]{checklist_id.toString()});
+    }
+
     public int delete() {
         init(MainActivity.ctx);
         return database.delete(TABLE, "id = ?", new String[]{id.toString()});
