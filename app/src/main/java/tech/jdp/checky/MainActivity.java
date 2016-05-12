@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tech.jdp.checky.db.checklist;
+import tech.jdp.checky.db.checklist_item;
 import tech.jdp.checky.db.notes;
 
 public class MainActivity extends AppCompatActivity {
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             checklist.read(row.id).delete();
+                            checklist_item.delete(row.id);
                         }
                     });
 
