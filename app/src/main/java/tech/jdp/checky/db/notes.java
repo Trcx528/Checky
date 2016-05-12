@@ -45,6 +45,7 @@ public class notes {
                 temp.put("note", mCursor.getString(2));
                 temp.put("updated_on", dateFormat.format(new Date(mCursor.getLong(3))));
                 temp.put("created_on", dateFormat.format(new Date(mCursor.getLong(4))));
+                temp.put("updated_time", mCursor.getLong(3));
                 result.put((Integer) temp.get("id"), temp);
             }
         }
@@ -61,6 +62,7 @@ public class notes {
             result.put("title", mCursor.getString(1));
             result.put("note", mCursor.getString(2));
             result.put("updated_on", dateFormat.format(new Date(mCursor.getLong(3))));
+            result.put("updated_time", mCursor.getLong(3));
             result.put("created_on", dateFormat.format(new Date(mCursor.getLong(4))));
         }
         return result;

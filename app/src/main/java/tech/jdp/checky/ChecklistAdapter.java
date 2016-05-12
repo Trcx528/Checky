@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 import java.util.ArrayList;
 
@@ -39,12 +40,20 @@ public class ChecklistAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         CheckBox cb;
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.checklist_row, null);
             cb = (CheckBox) convertView.findViewById(R.id.checkBox);
             convertView.setTag(cb);
+            cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    checklist_item item = checklist_item.read(((checklist_item) getItem(position)).id);
+                    item.checked = isChecked;
+                    item.update();
+                }
+            });
         } else {
             cb = (CheckBox) convertView.getTag();
         }

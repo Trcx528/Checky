@@ -1,6 +1,7 @@
 package tech.jdp.checky;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import tech.jdp.checky.db.checklist;
 import tech.jdp.checky.db.checklist_item;
 
 public class ChecklistActivity extends AppCompatActivity {
@@ -18,47 +20,58 @@ public class ChecklistActivity extends AppCompatActivity {
     Integer checklist_id = 0;
     EditText txtTitle;
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        checklist list = checklist.read(checklist_id);
+        list.title = txtTitle.getText().toString();
+        list.update();
+    }
+
     private void loadData() {
-        if (checklist_id != 0) {
-            final ListView lv = (ListView) findViewById(R.id.checkListView);
-            assert lv != null;
-            ChecklistAdapter adapter = new ChecklistAdapter(getApplicationContext(), checklist_item.readForChecklistId(checklist_id));
-            lv.setAdapter(adapter);
-            lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                @Override
-                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    final checklist_item item = (checklist_item) lv.getItemAtPosition(position);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
-                    final EditText text = new EditText(getApplicationContext());
-                    text.setSingleLine();
-                    builder.setView(text);
-                    builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            item.text = text.getText().toString();
-                            item.update();
-                        }
-                    });
+        final ListView lv = (ListView) findViewById(R.id.checkListView);
+        final Context ctx = this;
+        assert lv != null;
+        checklist list = checklist.read(checklist_id);
+        txtTitle.setText(list.title);
+        ChecklistAdapter adapter = new ChecklistAdapter(getApplicationContext(), checklist_item.readForChecklistId(checklist_id));
+        lv.setAdapter(adapter);
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                final checklist_item item = (checklist_item) lv.getItemAtPosition(position);
+                AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+                final EditText text = new EditText(getApplicationContext());
+                text.setSingleLine();
+                builder.setView(text);
+                builder.setTitle("Edit Item");
+                text.setText(item.text);
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        item.text = text.getText().toString();
+                        item.update();
+                    }
+                });
 
-                    builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
+                builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
 
-                    builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            item.delete();
-                        }
-                    });
-                    builder.setCancelable(true);
-                    builder.create().show();
-                    return true;
-                }
-            });
-        }
+                builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        item.delete();
+                    }
+                });
+                builder.setCancelable(true);
+                builder.create().show();
+                return true;
+            }
+        });
     }
 
     @Override
@@ -67,19 +80,19 @@ public class ChecklistActivity extends AppCompatActivity {
         setContentView(R.layout.activity_checklist);
         txtTitle = new EditText(getApplicationContext());
 
-        assert txtTitle != null;
         assert getSupportActionBar() != null;
         getSupportActionBar().setTitle("");
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         txtTitle.setSingleLine();
+        txtTitle.setHint("New Checklist");
+        txtTitle.setText("New Checklist");
         getSupportActionBar().setCustomView(txtTitle);
-        if (getIntent().getExtras() == null) {
-            txtTitle.setText("New Checklist");
-        } else {
+        if (getIntent().getExtras() != null) {
             this.checklist_id = (Integer) getIntent().getExtras().get("id");
         }
+        loadData();
     }
 
     @Override
@@ -113,6 +126,7 @@ public class ChecklistActivity extends AppCompatActivity {
                 }
             });
 
+            builder.setTitle("New Item");
             builder.setCancelable(true);
             builder.create().show();
 

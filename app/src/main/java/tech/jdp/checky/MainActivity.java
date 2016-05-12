@@ -1,6 +1,7 @@
 package tech.jdp.checky;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -17,10 +18,11 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import tech.jdp.checky.db.checklist;
-import tech.jdp.checky.db.checklist_item;
 import tech.jdp.checky.db.notes;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,22 +32,49 @@ public class MainActivity extends AppCompatActivity {
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+    public static Context ctx;
 
     private void setupList() {
         notes note = new notes(getApplicationContext());
         Map<Integer, Map<String, Object>> allNotes = note.read();
-        ArrayList<RowItem> data = new ArrayList<>();
+        Map<Long, RowItem> data = new HashMap<>();
         for (Integer id : allNotes.keySet()) {
             RowItem newRow = new RowItem();
             newRow.isNote = true;
             newRow.title = (String) allNotes.get(id).get("title");
             newRow.updated = (String) allNotes.get(id).get("updated_on");
             newRow.id = id;
-            data.add(newRow);
+            newRow.updated_time = (long) allNotes.get(id).get("updated_time");
+            data.put(newRow.updated_time, newRow);
+        }
+        ArrayList<checklist> checklistData = checklist.readAll();
+        for (checklist list : checklistData) {
+            RowItem newRow = new RowItem();
+            newRow.isNote = false;
+            newRow.title = list.title;
+            newRow.updated = list.updated_on;
+            newRow.id = list.id;
+            newRow.updated_time = list.updated_time;
+            data.put(newRow.updated_time, newRow);
         }
         final ListView lv = (ListView) findViewById(R.id.mainListView);
         assert lv != null;
-        MainListAdapter adapter = new MainListAdapter(getApplicationContext(), data);
+
+        Object[] sorted = data.keySet().toArray();
+        Arrays.sort(sorted);
+        int i = 0;
+        for (i = 0; i < sorted.length / 2; i++) {
+            Object tmp = sorted[i];
+            sorted[i] = sorted[sorted.length - 1 - i];
+            sorted[sorted.length - 1 - i] = tmp;
+        }
+
+        ArrayList<RowItem> finalData = new ArrayList<>();
+        for (Object o : sorted) {
+            finalData.add(data.get(o));
+        }
+
+        MainListAdapter adapter = new MainListAdapter(getApplicationContext(), finalData);
         lv.setAdapter(adapter);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -53,6 +82,12 @@ public class MainActivity extends AppCompatActivity {
                 RowItem row = (RowItem) lv.getItemAtPosition(position);
                 if (row.isNote) {
                     Intent i = new Intent(getApplicationContext(), NoteActivity.class);
+                    Bundle extras = new Bundle();
+                    extras.putInt("id", row.id);
+                    i.putExtras(extras);
+                    startActivity(i);
+                } else {
+                    Intent i = new Intent(getApplicationContext(), ChecklistActivity.class);
                     Bundle extras = new Bundle();
                     extras.putInt("id", row.id);
                     i.putExtras(extras);
@@ -86,6 +121,26 @@ public class MainActivity extends AppCompatActivity {
                     });
 
                     dia.create().show();
+                } else {
+                    AlertDialog.Builder dia = new AlertDialog.Builder(MainActivity.this);
+
+                    dia.setMessage("Delete checklist " + row.title + "?");
+                    dia.setCancelable(true);
+                    dia.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            checklist.read(row.id).delete();
+                        }
+                    });
+
+                    dia.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+
+                    dia.create().show();
                 }
                 return true;
             }
@@ -107,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        ctx = getApplicationContext();
         setupList();
     }
 
@@ -130,9 +186,10 @@ public class MainActivity extends AppCompatActivity {
                     Intent i = new Intent(getApplicationContext(), ChecklistActivity.class);
                     checklist new_checklist = new checklist();
                     new_checklist.title = "New Checklist";
-                    long checklist_id = new_checklist.create();
+                    new_checklist.id = (int) new_checklist.create();
                     Bundle extras = new Bundle();
-                    extras.putInt("id", (int) checklist_id);
+                    System.out.println(new_checklist.id);
+                    extras.putInt("id", new_checklist.id);
                     i.putExtras(extras);
                     startActivity(i);
                 }
@@ -170,8 +227,6 @@ public class MainActivity extends AppCompatActivity {
                 Uri.parse("android-app://tech.jdp.checky/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
-        checklist.init(getApplicationContext());
-        checklist_item.init(getApplicationContext());
     }
 
     @Override

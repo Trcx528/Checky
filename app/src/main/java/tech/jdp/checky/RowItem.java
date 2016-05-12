@@ -8,4 +8,5 @@ public class RowItem {
     public Integer id;
     public Boolean isNote;
     public String updated;
+    public long updated_time;
 }

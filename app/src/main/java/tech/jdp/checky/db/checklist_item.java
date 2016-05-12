@@ -10,6 +10,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import tech.jdp.checky.MainActivity;
+
 /**
  * Created by JPiquette on 5/11/2016.
  */
@@ -33,9 +35,10 @@ public class checklist_item {
         }
     }
 
-    public static ArrayList<checklist_item> readForChecklistId(int checklist_id) {
+    public static ArrayList<checklist_item> readForChecklistId(Integer checklist_id) {
+        init(MainActivity.ctx);
         ArrayList<checklist_item> result = new ArrayList<>();
-        Cursor mCursor = database.rawQuery("SELECT id,checklist_id,text,checked,updated_on,created_on FROM " + TABLE + " ORDER BY updated_on ASC", new String[]{});
+        Cursor mCursor = database.rawQuery("SELECT id,checklist_id,text,checked,updated_on,created_on FROM " + TABLE + " WHERE checklist_id = ? ORDER BY updated_on ASC", new String[]{checklist_id.toString()});
         assert mCursor != null;
         while (mCursor.moveToNext()) {
             checklist_item new_item = new checklist_item();
@@ -51,8 +54,9 @@ public class checklist_item {
     }
 
     public static checklist_item read(Integer id) {
+        init(MainActivity.ctx);
         checklist_item new_item = new checklist_item();
-        Cursor mCursor = database.rawQuery("SELECT id, checklist_id, checked, updated_on, created_on FROM " + TABLE + " WHERE id = ?", new String[]{id.toString()});
+        Cursor mCursor = database.rawQuery("SELECT id, checklist_id, text, checked, updated_on, created_on FROM " + TABLE + " WHERE id = ?", new String[]{id.toString()});
         assert mCursor != null;
         mCursor.moveToFirst();
         new_item.id = id;
@@ -65,10 +69,12 @@ public class checklist_item {
     }
 
     public int delete() {
+        init(MainActivity.ctx);
         return database.delete(TABLE, "id = ?", new String[]{id.toString()});
     }
 
     public long create() {
+        init(MainActivity.ctx);
         ContentValues vals = new ContentValues();
         vals.put("checklist_id", checklist_id);
         vals.put("text", text);
@@ -79,6 +85,7 @@ public class checklist_item {
     }
 
     public int update() {
+        init(MainActivity.ctx);
         ContentValues vals = new ContentValues();
         vals.put("text", text);
         vals.put("checked", checked ? 1 : 0);

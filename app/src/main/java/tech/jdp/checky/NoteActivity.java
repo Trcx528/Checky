@@ -29,6 +29,7 @@ public class NoteActivity extends AppCompatActivity {
         title.setSingleLine();
         getSupportActionBar().setCustomView(title);
         setTitle("");
+        title.setHint("New Note");
         if (getIntent().getExtras() == null) {
             title.setText("New Note");
         } else {
